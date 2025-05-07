@@ -1,0 +1,1827 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rahayu Teknik</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Custom CSS for additional styling */
+        .sidebar-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .progress-bar {
+            transition: width 0.5s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .active-view {
+            color: #1a365d;
+            border-bottom: 3px solid #1a365d;
+        }
+
+        .order-card:hover {
+            border-left: 4px solid #1a365d;
+            transition: all 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                z-index: 50;
+                height: 100vh;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .mobile-menu-button {
+                display: block;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Mobile menu button -->
+        <button class="mobile-menu-button fixed top-4 right-4 z-50 p-2 rounded-md bg-navy-800 text-white md:hidden"
+            onclick="toggleSidebar()">
+            <i class="fas fa-bars text-lg"></i>
+        </button>
+
+        <!-- Sidebar Navigation -->
+        <div id="sidebar" class="sidebar w-64 bg-[#1E3A8A] text-white flex flex-col transition-all duration-300">
+            <div class="p-4 flex items-center space-x-3 border-b border-[#2E4B8D]">
+                <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
+                    <i class="fas fa-industry"></i>
+                </div>
+                <h1 class="text-xl font-bold">Rahayu Teknik</h1>
+            </div>
+
+            <!-- View Toggle -->
+            <div class="flex border-b border-[#2E4B8D] p-2">
+                <button id="ownerViewBtn" class="flex items-center text-sm font-medium active-view"
+                    onclick="setView('owner')">
+                    <i class="fas fa-user-tie mr-2"></i>Tampilan Admin
+                </button>
+                <button id="customerViewBtn" class="flex items-center text-sm font-medium"
+                    onclick="setView('customer')">
+                    <i class="fas fa-users mr-2"></i>Tampilan Pelanggan
+                </button>
+            </div>
+
+            <!-- Owner Menu -->
+            <div id="ownerMenu" class="flex-1 overflow-y-auto">
+                <nav class="p-2 space-y-1">
+                    <a href="#" class="sidebar-link flex items-center p-3 rounded-lg"
+                        onclick="showSection('dashboard')">
+                        <i class="fas fa-tachometer-alt mr-3 text-blue-300"></i>
+                        <span>Tinjauan Dasbor</span>
+                    </a>
+                    <a href="#" class="sidebar-link flex items-center p-3 rounded-lg"
+                        onclick="showSection('inventory')">
+                        <i class="fas fa-boxes mr-3 text-blue-300"></i>
+                        <span>Persediaan</span>
+                    </a>
+                    <a href="#" class="sidebar-link flex items-center p-3 rounded-lg"
+                        onclick="showSection('machining')">
+                        <i class="fas fa-cogs mr-3 text-blue-300"></i>
+                        <span>Proses Pemesinan</span>
+                    </a>
+                    <a href="#" class="sidebar-link flex items-center p-3 rounded-lg" onclick="showSection('sales')">
+                        <i class="fas fa-chart-line mr-3 text-blue-300"></i>
+                        <span>Statistik Penjualan</span>
+                    </a>
+                    <a href="#" class="sidebar-link flex items-center p-3 rounded-lg" onclick="showSection('orders')">
+                        <i class="fas fa-clipboard-list mr-3 text-blue-300"></i>
+                        <span>Progres Pesanan</span>
+                    </a>
+                    <a href="#" class="sidebar-link flex items-center p-3 rounded-lg"
+                        onclick="showSection('customers')">
+                        <i class="fas fa-address-book mr-3 text-blue-300"></i>
+                        <span>Profil Pelanggan</span>
+                    </a>
+                    <a href="#" class="sidebar-link flex items-center p-3 rounded-lg" onclick="showSection('comms')">
+                        <i class="fas fa-envelope mr-3 text-blue-300"></i>
+                        <span>Kontak & Pemesanan</span>
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Customer Menu -->
+            <div id="customerMenu" class="hidden flex-1 overflow-y-auto">
+                <nav class="p-2 space-y-1">
+                    <a href="#" class="sidebar-link flex items-center p-3 rounded-lg"
+                        onclick="showCustomerSection('profile')">
+                        <i class="fas fa-store mr-3 text-blue-300"></i>
+                        <span>Profil UMKM</span>
+                    </a>
+                    <a href="#" class="sidebar-link flex items-center p-3 rounded-lg"
+                        onclick="showCustomerSection('contact')">
+                        <i class="fas fa-phone-alt mr-3 text-blue-300"></i>
+                        <span>Kontak & Pemesanan</span>
+                    </a>
+                    <a href="#" class="sidebar-link flex items-center p-3 rounded-lg"
+                        onclick="showCustomerSection('tracking')">
+                        <i class="fas fa-truck mr-3 text-blue-300"></i>
+                        <span>Pelacakan Pesanan</span>
+                    </a>
+                </nav>
+            </div>
+
+            <!-- User Profile -->
+            <div class="p-4 border-t border-[#2E4B8D]">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">
+                        <i class="fas fa-user text-sm"></i>
+                    </div>
+                    <div class="text-sm">
+                        <p class="font-medium">Pengguna Admin</p>
+                        <p class="text-blue-200">adminrahayuteknik.com</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Top Header -->
+            <header class="bg-white border-b border-gray-200 p-4 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-semibold text-gray-800">Tinjauan Dasbor</h2>
+                    <div class="flex items-center space-x-3">
+                        <button class="p-2 rounded-full bg-gray-100 hover:bg-gray-200">
+                            <i class="fas fa-bell text-gray-600"></i>
+                        </button>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm font-medium">Pengguna Admin</span>
+                            <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">
+                                <i class="fas fa-user text-white text-sm"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Owner View Content -->
+            <div id="ownerView" class="flex-1 overflow-y-auto p-4 bg-gray-50">
+                <!-- Dashboard Overview -->
+                <section id="dashboardSection">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <!-- Inventory Summary Card -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500 text-sm">Jumlah Barang Persediaan</p>
+                                    <h3 class="text-2xl font-bold mt-1 text-blue-900">1,248</h3>
+                                </div>
+                                <div class="p-3 rounded-lg bg-blue-100 text-blue-600">
+                                    <i class="fas fa-boxes text-xl"></i>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <p class="text-sm text-gray-500">
+                                    <span class="text-green-500 font-medium">+0</span> barang yang ditambahkan hari ini
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Production Summary Card -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500 text-sm">Dalam Produksi</p>
+                                    <h3 class="text-2xl font-bold mt-1 text-blue-900">1</h3>
+                                </div>
+                                <div class="p-3 rounded-lg bg-green-100 text-green-600">
+                                    <i class="fas fa-tools text-xl"></i>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <p class="text-sm text-gray-500">
+                                    <span class="text-blue-500 font-medium">23</span> selesai hari ini
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Sales Summary Card -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500 text-sm">Penjualan Bulanan</p>
+                                    <h3 class="text-2xl font-bold mt-1 text-blue-900">Rp 3.000.000</h3>
+                                </div>
+                                <div class="p-3 rounded-lg bg-purple-100 text-purple-600">
+                                    <i class="fas fa-chart-line text-xl"></i>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <p class="text-sm text-gray-500">
+                                    <span class="text-green-500 font-medium">+8.2%</span> dibandingkan bulan lalu
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Customer Summary Card -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500 text-sm">Pelanggan Aktif</p>
+                                    <h3 class="text-2xl font-bold mt-1 text-blue-900">143</h3>
+                                </div>
+                                <div class="p-3 rounded-lg bg-yellow-100 text-yellow-600">
+                                    <i class="fas fa-users text-xl"></i>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <p class="text-sm text-gray-500">
+                                    <span class="text-blue-500 font-medium">3</span> baru minggu ini
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+                        <!-- Sales Chart -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+                            <h3 class="text-lg font-semibold mb-4 text-gray-700">Tren Penjualan Bulanan</h3>
+                            <canvas id="salesChart" height="200"></canvas>
+                        </div>
+
+                        <!-- Production Chart -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+                            <h3 class="text-lg font-semibold mb-4 text-gray-700">Penyelesaian Produksi</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <div class="flex justify-between mb-1">
+                                        <span class="text-sm font-medium text-blue-700">Blok Custom</span>
+                                        <span class="text-sm font-medium text-blue-700">50%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div class="bg-blue-600 h-2.5 rounded-full progress-bar" style="width: 50%">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between mb-1">
+                                        <span class="text-sm font-medium text-green-700">Head Custom</span>
+                                        <span class="text-sm font-medium text-green-700">64%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div class="bg-green-500 h-2.5 rounded-full progress-bar" style="width: 64%">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between mb-1">
+                                        <span class="text-sm font-medium text-purple-700">Alat Bantu</span>
+                                        <span class="text-sm font-medium text-purple-700">45%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div class="bg-purple-500 h-2.5 rounded-full progress-bar" style="width: 45%">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Orders -->
+                        <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="text-lg font-semibold text-gray-700">Pesanan Terakhir</h3>
+                                <button class="text-sm text-blue-600 hover:text-blue-800">Lihat Semua</button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th scope="col"
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Pesanan</th>
+                                            <th scope="col"
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Pelanggan</th>
+                                            <th scope="col"
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Produk</th>
+                                            <th scope="col"
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Status</th>
+                                            <th scope="col"
+                                                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Penyelesaian</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                                                AC-10254</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Bengkel X
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Blok Custom
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span
+                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Dalam
+                                                    Produksi</span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-blue-600 h-2 rounded-full progress-bar"
+                                                        style="width: 65%"></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                                                AC-10253</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Bengkel Y
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Blok Custom
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span
+                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Siap
+                                                    Diambil</span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-green-600 h-2 rounded-full" style="width: 100%">
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                                                AC-10252</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Bengkel Z</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Head Custom
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span
+                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-yellow-500 h-2 rounded-full" style="width: 15%">
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                                                AC-10251</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Bengkel A</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Blok Custom
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span
+                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Dalam
+                                                    Produksi</span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-blue-600 h-2 rounded-full" style="width: 65%"></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                </section>
+
+                <!-- Inventory Section -->
+                <section id="inventorySection" class="hidden">
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-xl font-semibold text-gray-800">Manajemen Persediaan</h2>
+                            <button
+                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center">
+                                <i class="fas fa-plus mr-2"></i> Tambahkan item
+                            </button>
+                        </div>
+
+                        <!-- Inventory Stats -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-blue-600">Nilai Total Stok</p>
+                                        <h3 class="text-2xl font-bold text-blue-900">Rp 30.000.000</h3>
+                                    </div>
+                                    <div class="p-2 rounded-lg bg-blue-100 text-blue-600">
+                                        <i class="fas fa-dollar-sign"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-green-600">Barang Dalam Persediaan</p>
+                                        <h3 class="text-2xl font-bold text-green-900">Liner Mesin Motor</h3>
+                                    </div>
+                                    <div class="p-2 rounded-lg bg-green-100 text-green-600">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-red-50 p-4 rounded-lg border border-red-100">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-red-600">Barang Dengan Stok Rendah</p>
+                                        <h3 class="text-2xl font-bold text-red-900">Sitting Klep</h3>
+                                    </div>
+                                    <div class="p-2 rounded-lg bg-red-100 text-red-600">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Inventory Table -->
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col"
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Kode Item</th>
+                                        <th scope="col"
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Deskripsi</th>
+                                        <th scope="col"
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Kategori</th>
+                                        <th scope="col"
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Stok Saat Ini</th>
+                                        <th scope="col"
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Status</th>
+                                        <th scope="col"
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Tindakan</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                                            AC-TI-001</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Liner Blok
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Bahan Mentah</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">400 unit</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span
+                                                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Tersedia</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <button class="text-blue-600 hover:text-blue-900 mr-2"><i
+                                                    class="fas fa-edit"></i></button>
+                                            <button class="text-red-600 hover:text-red-900"><i
+                                                    class="fas fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                                            AC-CB-002</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Sitting Klep
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Bahan Baku</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">3 unit</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span
+                                                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Stok
+                                                Rendah</span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <button class="text-blue-600 hover:text-blue-900 mr-2"><i
+                                                    class="fas fa-edit"></i></button>
+                                            <button class="text-red-600 hover:text-red-900"><i
+                                                    class="fas fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                                            AC-BK-003</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Elektroda Las
+                                            Bracket</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Bahan Baku</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">5 unit</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span
+                                                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Stok
+                                                Rendah
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <button class="text-blue-600 hover:text-blue-900 mr-2"><i
+                                                    class="fas fa-edit"></i></button>
+                                            <button class="text-red-600 hover:text-red-900"><i
+                                                    class="fas fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                                            AC-EX-004</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Mata Pahat
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Komponen</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">100 unit</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span
+                                                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Tersedia
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <button class="text-blue-600 hover:text-blue-900 mr-2"><i
+                                                    class="fas fa-edit"></i></button>
+                                            <button class="text-red-600 hover:text-red-900"><i
+                                                    class="fas fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Machining Progress Section -->
+                <section id="machiningSection" class="hidden">
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h2 class="text-xl font-semibold text-gray-800 mb-6">Progres Produksi</h2>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Current Production -->
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-700 mb-4">Pekerjaan Produksi Saat Ini</h3>
+                                <div class="space-y-4">
+                                    <div class="border rounded-lg p-4 hover:border-blue-400 transition-colors">
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <h4 class="font-medium text-gray-800">#AC-10254 - Blok Custom</h4>
+                                                <p class="text-sm text-gray-500 mt-1">Blok Custom - Selesai: 15 Jun
+                                                    2025</p>
+                                            </div>
+                                            <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">Dalam
+                                                Proses</span>
+                                        </div>
+                                        <div class="mt-3">
+                                            <div class="flex justify-between text-sm mb-1">
+                                                <span>Penyelesaian</span>
+                                                <span>65%</span>
+                                            </div>
+                                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                                <div class="bg-blue-600 h-2 rounded-full" style="width: 65%"></div>
+                                            </div>
+                                            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                                <span>Mulai: 14 Jun</span>
+                                                <span>Selesai: 15 Jun</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="border rounded-lg p-4 hover:border-blue-400 transition-colors">
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <h4 class="font-medium text-gray-800">#AC-10253 - Blok Custom</h4>
+                                                <p class="text-sm text-gray-500 mt-1">Blok Custom - Selesai: 10 Jun 2025
+                                                </p>
+                                            </div>
+                                            <span
+                                                class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Siap
+                                                Diambil</span>
+                                        </div>
+                                        <div class="mt-3">
+                                            <div class="flex justify-between text-sm mb-1">
+                                                <span>Penyelesaian</span>
+                                                <span>100%</span>
+                                            </div>
+                                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                                <div class="bg-green-600 h-2 rounded-full" style="width: 100%"></div>
+                                            </div>
+                                            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                                <span>Mulai: 9 Jun</span>
+                                                <span>Selesai: 10 Jun</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Production Summary -->
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-700 mb-4">Metrik Produksi</h3>
+                                <div class="grid grid-cols-2 gap-4 mb-6">
+                                    <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                                        <p class="text-sm text-blue-600">Hasil hari ini</p>
+                                        <h4 class="text-2xl font-bold text-blue-900 mt-1">12</h4>
+                                        <p class="text-xs text-blue-400 mt-1">+2 dari kemarin</p>
+                                    </div>
+                                    <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                                        <p class="text-sm text-green-600">Penyelesaian Mingguan</p>
+                                        <h4 class="text-2xl font-bold text-green-900 mt-1">86%</h4>
+                                        <p class="text-xs text-green-400 mt-1">Sesuai target</p>
+                                    </div>
+                                    <div class="bg-purple-50 p-4 rounded-lg border border-purple-100">
+                                        <p class="text-sm text-purple-600">Rata-rata Waktu Penyelesaian</p>
+                                        <h4 class="text-2xl font-bold text-purple-900 mt-1">4.2d</h4>
+                                        <p class="text-xs text-purple-400 mt-1">-1.1 hari dari bulan lalu</p>
+                                    </div>
+                                    <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
+                                        <p class="text-sm text-yellow-600">Pekerjaan Tertunda</p>
+                                        <h4 class="text-2xl font-bold text-yellow-900 mt-1">8</h4>
+                                        <p class="text-xs text-yellow-400 mt-1">+1 dari kemarin</p>
+                                    </div>
+                                </div>
+
+                                <div class="bg-white border rounded-lg p-4">
+                                    <h4 class="font-medium text-gray-700 mb-2">Penggunaan Mesin</h4>
+                                    <canvas id="machineUtilizationChart" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Sales Statistics Section -->
+                <section id="salesSection" class="hidden">
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h2 class="text-xl font-semibold text-gray-800 mb-6">Analisis Penjualan</h2>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+                            <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                                <p class="text-sm text-blue-600">Pendapatan Bulanan</p>
+                                <h3 class="text-2xl font-bold text-blue-900 mt-1">Rp 3.000.000</h3>
+                                <p class="text-xs text-blue-400 mt-1">
+                                    <i class="fas fa-arrow-up mr-1"></i>8.2% dibandingkan bulan lalu
+                                </p>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                                <p class="text-sm text-green-600">Pelanggan Baru</p>
+                                <h3 class="text-2xl font-bold text-green-900 mt-1">14</h3>
+                                <p class="text-xs text-green-400 mt-1">
+                                    <i class="fas fa-arrow-up mr-1"></i>3 dari akhir minggu
+                                </p>
+                            </div>
+                            <div class="bg-purple-50 p-4 rounded-lg border border-purple-100">
+                                <p class="text-sm text-purple-600">Pelanggan Tetap</p>
+                                <h3 class="text-2xl font-bold text-purple-900 mt-1">28</h3>
+                                <p class="text-xs text-purple-400 mt-1">
+                                    <i class="fas fa-arrow-up mr-1"></i>15% dari akhir bulan
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="bg-white border rounded-lg p-4">
+                                <h3 class="text-lg font-medium text-gray-700 mb-2">Tren Penjualan Bulanan</h3>
+                                <canvas id="detailedSalesChart" height="250"></canvas>
+                            </div>
+
+                            <div class="bg-white border rounded-lg p-4">
+                                <h3 class="text-lg font-medium text-gray-700 mb-2">Produk Teratas</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <div class="flex justify-between mb-1">
+                                            <span class="text-sm font-medium text-blue-700">Blok custom</span>
+                                            <span class="text-sm font-medium text-blue-700">Rp 2.000.000</span>
+                                        </div>
+                                        <div class="w-full bg-gray-200 rounded-full h-2">
+                                            <div class="bg-blue-600 h-2 rounded-full" style="width: 70%"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between mb-1">
+                                            <span class="text-sm font-medium text-green-700">Head Custom</span>
+                                            <span class="text-sm font-medium text-green-700">Rp 1.000.000</span>
+                                        </div>
+                                        <div class="w-full bg-gray-200 rounded-full h-2">
+                                            <div class="bg-green-500 h-2 rounded-full" style="width: 58%"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between mb-1">
+                                            <span class="text-sm font-medium text-purple-700">Alat Bantu</span>
+                                            <span class="text-sm font-medium text-purple-700">Rp 0</span>
+                                        </div>
+                                        <div class="w-full bg-gray-200 rounded-full h-2">
+                                            <div class="bg-purple-500 h-2 rounded-full" style="width: 42%"></div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <div class="mt-6">
+                                    <h4 class="text-md font-medium text-gray-700 mb-3">Pelanggan Teratas</h4>
+                                    <div class="space-y-3">
+                                        <div class="flex items-center">
+                                            <div
+                                                class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                                <span class="text-blue-600 text-sm font-medium">PM</span>
+                                            </div>
+                                            <div class="ml-3">
+                                                <p class="text-sm font-medium text-gray-700">Bengkel X</p>
+                                                <p class="text-xs text-gray-500">Rp 1.200.000</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div
+                                                class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                                                <span class="text-green-600 text-sm font-medium">GT</span>
+                                            </div>
+                                            <div class="ml-3">
+                                                <p class="text-sm font-medium text-gray-700">Bengkel Y</p>
+                                                <p class="text-xs text-gray-500">Rp 1.000.000</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div
+                                                class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
+                                                <span class="text-purple-600 text-sm font-medium">AD</span>
+                                            </div>
+                                            <div class="ml-3">
+                                                <p class="text-sm font-medium text-gray-700">Bengkel Z</p>
+                                                <p class="text-xs text-gray-500">Rp 800.000</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Order Progress Section -->
+                <section id="ordersSection" class="hidden">
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-xl font-semibold text-gray-800">Pengelolaan Pesanan</h2>
+                            <div class="flex space-x-2">
+                                <select
+                                    class="border rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                    <option>Semua Status</option>
+                                    <option>Tertunda</option>
+                                    <option>Sedang Produksi</option>
+                                    <option>Testing</option>
+                                    <option>Selesai</option>
+                                    <option>Shipped</option>
+                                </select>
+                                <button
+                                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center">
+                                    <i class="fas fa-plus mr-2"></i> Pesanan Terbaru
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                            <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                                <p class="text-sm text-blue-600">Total Order</p>
+                                <h3 class="text-2xl font-bold text-blue-900 mt-1">42</h3>
+                                <p class="text-xs text-blue-400 mt-1">
+                                    <i class="fas fa-arrow-up mr-1"></i>12 dari akhir bulan
+                                </p>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                                <p class="text-sm text-green-600">Selesai</p>
+                                <h3 class="text-2xl font-bold text-green-900 mt-1">16</h3>
+                                <p class="text-xs text-green-400 mt-1">38% tingkat penyelesaian</p>
+                            </div>
+                            <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
+                                <p class="text-sm text-yellow-600">Sedang Proses</p>
+                                <h3 class="text-2xl font-bold text-yellow-900 mt-1">12</h3>
+                                <p class="text-xs text-yellow-400 mt-1">Rata-rata 4 hari penyelesaian</p>
+                            </div>
+                            <div class="bg-purple-50 p-4 rounded-lg border border-purple-100">
+                                <p class="text-sm text-purple-600">Tertunda</p>
+                                <h3 class="text-2xl font-bold text-purple-900 mt-1">14</h3>
+                                <p class="text-xs text-purple-400 mt-1">3 pesanan mendadak</p>
+                            </div>
+                        </div>
+
+                        <!-- Order Cards -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- Order 1 -->
+                            <div class="border rounded-lg overflow-hidden hover:shadow-md transition-shadow order-card">
+                                <div class="p-4 bg-white">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <p class="text-sm text-gray-500">#AC-10254</p>
+                                            <h3 class="text-lg font-medium text-blue-600">Turbo Kit V3</h3>
+                                        </div>
+                                        <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">In
+                                            Production</span>
+                                    </div>
+                                    <p class="text-sm text-gray-500 mt-1">Performance Auto</p>
+                                    <div class="mt-3">
+                                        <div class="flex justify-between text-sm mb-1">
+                                            <span>Progress</span>
+                                            <span>65%</span>
+                                        </div>
+                                        <div class="w-full bg-gray-200 rounded-full h-2">
+                                            <div class="bg-blue-600 h-2 rounded-full" style="width: 65%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2 flex justify-between items-center">
+                                        <span class="text-sm text-gray-500">Due: 15 Jan 2024</span>
+                                        <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                            Details <i class="fas fa-chevron-right ml-1"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Order 2 -->
+                            <div class="border rounded-lg overflow-hidden hover:shadow-md transition-shadow order-card">
+                                <div class="p-4 bg-white">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <p class="text-sm text-gray-500">#AC-10253</p>
+                                            <h3 class="text-lg font-medium text-green-600">Ceramic Brake Kit</h3>
+                                        </div>
+                                        <span
+                                            class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">Shipped</span>
+                                    </div>
+                                    <p class="text-sm text-gray-500 mt-1">GT Motorsports</p>
+                                    <div class="mt-3">
+                                        <div class="flex justify-between text-sm mb-1">
+                                            <span>Progress</span>
+                                            <span>100%</span>
+                                        </div>
+                                        <div class="w-full bg-gray-200 rounded-full h-2">
+                                            <div class="bg-green-600 h-2 rounded-full" style="width: 100%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2 flex justify-between items-center">
+                                        <span class="text-sm text-gray-500">Shipped: 08 Jan 2024</span>
+                                        <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                            Details <i class="fas fa-chevron-right ml-1"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Order 3 -->
+                            <div class="border rounded-lg overflow-hidden hover:shadow-md transition-shadow order-card">
+                                <div class="p-4 bg-white">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <p class="text-sm text-gray-500">#AC-10252</p>
+                                            <h3 class="text-lg font-medium text-yellow-600">Suspension Kit</h3>
+                                        </div>
+                                        <span
+                                            class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Pending</span>
+                                    </div>
+                                    <p class="text-sm text-gray-500 mt-1">Race Dynamics</p>
+                                    <div class="mt-3">
+                                        <div class="flex justify-between text-sm mb-1">
+                                            <span>Progress</span>
+                                            <span>15%</span>
+                                        </div>
+                                        <div class="w-full bg-gray-200 rounded-full h-2">
+                                            <div class="bg-yellow-500 h-2 rounded-full" style="width: 15%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2 flex justify-between items-center">
+                                        <span class="text-sm text-gray-500">Due: 22 Jan 2024</span>
+                                        <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                            Details <i class="fas fa-chevron-right ml-1"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Customer Profiles Section -->
+                <section id="customersSection" class="hidden">
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-xl font-semibold text-gray-800">Customer Management</h2>
+                            <button
+                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center">
+                                <i class="fas fa-plus mr-2"></i> Add Customer
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                                <p class="text-sm text-blue-600">Total Customers</p>
+                                <h3 class="text-2xl font-bold text-blue-900 mt-1">143</h3>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                                <p class="text-sm text-green-600">Active This Month</p>
+                                <h3 class="text-2xl font-bold text-green-900 mt-1">36</h3>
+                            </div>
+                            <div class="bg-purple-50 p-4 rounded-lg border border-purple-100">
+                                <p class="text-sm text-purple-600">New This Quarter</p>
+                                <h3 class="text-2xl font-bold text-purple-900 mt-1">12</h3>
+                            </div>
+                        </div>
+
+                        <!-- Customer Search and Filter -->
+                        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div class="md:col-span-2">
+                                    <div class="relative">
+                                        <input type="text"
+                                            class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                            placeholder="Search customers...">
+                                        <div class="absolute left-3 top-2.5 text-gray-400">
+                                            <i class="fas fa-search"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <select
+                                        class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm">
+                                        <option>All Customer Types</option>
+                                        <option>Retail</option>
+                                        <option>Wholesale</option>
+                                        <option>Distributor</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <select
+                                        class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm">
+                                        <option>Sort by: Recent Activity</option>
+                                        <option>Sort by: Name (A-Z)</option>
+                                        <option>Sort by: Lifetime Value</option>
+                                        <option>Sort by: Last Order Date</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Customer List -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- Customer 1 -->
+                            <div class="border rounded-lg p-4 hover:shadow-md transition-shadow card-hover">
+                                <div class="flex items-start">
+                                    <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                                        <span class="text-blue-600 text-lg font-medium">PM</span>
+                                    </div>
+                                    <div class="ml-3 flex-1">
+                                        <div class="flex justify-between items-start">
+                                            <h3 class="text-lg font-medium">Performance Motors</h3>
+                                            <span
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Premium</span>
+                                        </div>
+                                        <p class="text-sm text-gray-500">Since: Jan 2022</p>
+                                        <div class="mt-2 grid grid-cols-2 gap-2">
+                                            <div>
+                                                <p class="text-xs text-gray-500">Orders</p>
+                                                <p class="text-sm font-medium">24</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs text-gray-500">Lifetime Value</p>
+                                                <p class="text-sm font-medium">$12,450</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs text-gray-500">Last Order</p>
+                                                <p class="text-sm font-medium">05 Jan 2024</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs text-gray-500">Status</p>
+                                                <span
+                                                    class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Active</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-4 flex justify-end space-x-2">
+                                    <button class="px-3 py-1 text-sm border rounded-lg hover:bg-gray-100">
+                                        <i class="fas fa-envelope mr-1"></i> Message
+                                    </button>
+                                    <button
+                                        class="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200">
+                                        View <i class="fas fa-chevron-right ml-1"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Customer 2 -->
+                            <div class="border rounded-lg p-4 hover:shadow-md transition-shadow card-hover">
+                                <div class="flex items-start">
+                                    <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                                        <span class="text-green-600 text-lg font-medium">GT</span>
+                                    </div>
+                                    <div class="ml-3 flex-1">
+                                        <div class="flex justify-between items-start">
+                                            <h3 class="text-lg font-medium">GT Auto Tuning</h3>
+                                            <span
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Gold</span>
+                                        </div>
+                                        <p class="text-sm text-gray-500">Since: Mar 2021</p>
+                                        <div class="mt-2 grid grid-cols-2 gap-2">
+                                            <div>
+                                                <p class="text-xs text-gray-500">Orders</p>
+                                                <p class="text-sm font-medium">18</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs text-gray-500">Lifetime Value</p>
+                                                <p class="text-sm font-medium">$8,320</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs text-gray-500">Last Order</p>
+                                                <p class="text-sm font-medium">28 Dec 2023</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs text-gray-500">Status</p>
+                                                <span
+                                                    class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Active</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-4 flex justify-end space-x-2">
+                                    <button class="px-3 py-1 text-sm border rounded-lg hover:bg-gray-100">
+                                        <i class="fas fa-envelope mr-1"></i> Message
+                                    </button>
+                                    <button
+                                        class="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200">
+                                        View <i class="fas fa-chevron-right ml-1"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Customer 3 -->
+                            <div class="border rounded-lg p-4 hover:shadow-md transition-shadow card-hover">
+                                <div class="flex items-start">
+                                    <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
+                                        <span class="text-purple-600 text-lg font-medium">AD</span>
+                                    </div>
+                                    <div class="ml-3 flex-1">
+                                        <div class="flex justify-between items-start">
+                                            <h3 class="text-lg font-medium">Apex Dynamics</h3>
+                                            <span
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">Silver</span>
+                                        </div>
+                                        <p class="text-sm text-gray-500">Since: Aug 2022</p>
+                                        <div class="mt-2 grid grid-cols-2 gap-2">
+                                            <div>
+                                                <p class="text-xs text-gray-500">Orders</p>
+                                                <p class="text-sm font-medium">9</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs text-gray-500">Lifetime Value</p>
+                                                <p class="text-sm font-medium">$5,780</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs text-gray-500">Last Order</p>
+                                                <p class="text-sm font-medium">15 Nov 2023</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs text-gray-500">Status</p>
+                                                <span
+                                                    class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Inactive</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-4 flex justify-end space-x-2">
+                                    <button class="px-3 py-1 text-sm border rounded-lg hover:bg-gray-100">
+                                        <i class="fas fa-envelope mr-1"></i> Message
+                                    </button>
+                                    <button
+                                        class="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200">
+                                        View <i class="fas fa-chevron-right ml-1"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Communication Section -->
+                <section id="commsSection" class="hidden">
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-xl font-semibold text-gray-800">Customer Communications</h2>
+                            <button
+                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center">
+                                <i class="fas fa-plus mr-2"></i> New Message
+                            </button>
+                        </div>
+
+                        <!-- Communication Stats -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                                <p class="text-sm text-blue-600">Today's Messages</p>
+                                <h3 class="text-2xl font-bold text-blue-900 mt-1">12</h3>
+                                <p class="text-xs text-blue-400 mt-1">
+                                    <i class="fas fa-arrow-up mr-1"></i>3 from yesterday
+                                </p>
+                            </div>
+                            <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                                <p class="text-sm text-green-600">Pending Responses</p>
+                                <h3 class="text-2xl font-bold text-green-900 mt-1">8</h3>
+                                <p class="text-xs text-green-400 mt-1">2 urgent requests</p>
+                            </div>
+                            <div class="bg-purple-50 p-4 rounded-lg border border-purple-100">
+                                <p class="text-sm text-purple-600">Avg. Response Time</p>
+                                <h3 class="text-2xl font-bold text-purple-900 mt-1">4h 22m</h3>
+                                <p class="text-xs text-purple-400 mt-1">
+                                    <i class="fas fa-arrow-down mr-1"></i>1h from last week
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Message Inbox -->
+                        <div class="border rounded-lg overflow-hidden">
+                            <div class="bg-gray-50 px-4 py-3 border-b">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-4">
+                                        <h3 class="font-medium text-gray-700">Inbox</h3>
+                                        <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">24
+                                            messages</span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <button class="p-2 rounded-full hover:bg-gray-200">
+                                            <i class="fas fa-archive text-gray-500"></i>
+                                        </button>
+                                        <button class="p-2 rounded-full hover:bg-gray-200">
+                                            <i class="fas fa-ellipsis-v text-gray-500"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Message List -->
+                            <div>
+                                <!-- Message 1 -->
+                                <div class="border-b hover:bg-gray-50">
+                                    <div class="px-4 py-3 flex items-start">
+                                        <div
+                                            class="w-10 h-10 rounded-full bg-blue-100 flex-shrink-0 flex items-center justify-center">
+                                            <span class="text-blue-600 font-medium">PM</span>
+                                        </div>
+                                        <div class="ml-3 flex-1 min-w-0">
+                                            <div class="flex justify-between">
+                                                <p class="text-sm font-medium text-gray-900 truncate">Performance Motors
+                                                </p>
+                                                <div class="flex items-center">
+                                                    <span class="text-xs text-gray-500 mr-2">Today, 10:30 AM</span>
+                                                    <span
+                                                        class="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded">New</span>
+                                                </div>
+                                            </div>
+                                            <p class="text-sm text-gray-500 truncate mt-1">Regarding delivery timeline
+                                                for order #AC-10254</p>
+                                            <div class="mt-2">
+                                                <button class="text-xs text-blue-600 hover:text-blue-800">Reply</button>
+                                                <button class="text-xs text-gray-500 hover:text-gray-700 ml-3">Mark as
+                                                    read</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Message 2 -->
+                                <div class="border-b hover:bg-gray-50">
+                                    <div class="px-4 py-3 flex items-start">
+                                        <div
+                                            class="w-10 h-10 rounded-full bg-green-100 flex-shrink-0 flex items-center justify-center">
+                                            <span class="text-green-600 font-medium">GT</span>
+                                        </div>
+                                        <div class="ml-3 flex-1 min-w-0">
+                                            <div class="flex justify-between">
+                                                <p class="text-sm font-medium text-gray-900 truncate">GT Auto Tuning</p>
+                                                <span class="text-xs text-gray-500">Yesterday, 3:45 PM</span>
+                                            </div>
+                                            <p class="text-sm text-gray-500 truncate mt-1">Confirming receipt of order
+                                                #AC-10253 and requesting invoice</p>
+                                            <div class="mt-2">
+                                                <button class="text-xs text-blue-600 hover:text-blue-800">Reply</button>
+                                                <button class="text-xs text-gray-500 hover:text-gray-700 ml-3">Mark as
+                                                    read</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Message 3 -->
+                                <div class="border-b hover:bg-gray-50">
+                                    <div class="px-4 py-3 flex items-start">
+                                        <div
+                                            class="w-10 h-10 rounded-full bg-purple-100 flex-shrink-0 flex items-center justify-center">
+                                            <span class="text-purple-600 font-medium">AD</span>
+                                        </div>
+                                        <div class="ml-3 flex-1 min-w-0">
+                                            <div class="flex justify-between">
+                                                <p class="text-sm font-medium text-gray-900 truncate">Apex Dynamics</p>
+                                                <span class="text-xs text-gray-500">Jan 5, 2024</span>
+                                            </div>
+                                            <p class="text-sm text-gray-500 truncate mt-1">Inquiry about custom
+                                                suspension components for 2024 projects</p>
+                                            <div class="mt-2">
+                                                <button class="text-xs text-blue-600 hover:text-blue-800">Reply</button>
+                                                <button class="text-xs text-gray-500 hover:text-gray-700 ml-3">Mark as
+                                                    read</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Customer View Content -->
+            <div id="customerView" class="hidden flex-1 overflow-y-auto p-4 bg-gray-50">
+                <!-- Profile Section -->
+                <section id="profileSection">
+                    <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                        <div class="flex flex-col md:flex-row items-start md:items-center">
+                            <div
+                                class="w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center mb-4 md:mb-0 md:mr-6">
+                                <i class="fas fa-car text-blue-600 text-3xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h2 class="text-2xl font-bold text-gray-800 mb-1">Rahayu Teknik</h2>
+                                <p class="text-gray-600 mb-3">Produsen Komponen Otomotif Kustom</p>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">Harga
+                                        Terjangkau
+                                    </span>
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">CNC
+                                        Presisi</span>
+                                    <span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">Custom
+                                        Tepat Waktu</span>
+                                    <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">Est.
+                                        2025</span>
+                                </div>
+                            </div>
+                            <button
+                                class="mt-4 md:mt-0 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center">
+                                <i class="fas fa-edit mr-2"></i> Edit Profil
+                            </button>
+                        </div>
+
+                        <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-700 mb-3">Tentang Kami</h3>
+                                <p class="text-gray-600 text-justify">
+                                    Rahayu Teknik merupakan sebuah bengkel permesinan yang bergerak di bidang jasa
+                                    manufaktur komponen otomotif,
+                                    khususnya dalam pembuatan dan perbaikan custom spare part mesin kendaraan. Bengkel
+                                    ini beroperasi dalam skala kecil
+                                    dan
+                                    bersifat job shop, di mana jenis pekerjaan bervariasi tergantung pada permintaan
+                                    pelanggan. Produk yang dihasilkan
+                                    bersifat spesifik dan tidak diproduksi massal, sehingga proses pengerjaannya
+                                    membutuhkan keterampilan teknis yang
+                                    tinggi
+                                    serta fleksibilitas dalam pengaturan alur kerja.
+                                </p>
+
+                                </p>
+                            </div>
+
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-700 mb-3">Kemampuan</h3>
+                                <ul class="space-y-2">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                        <span class="text-gray-600">Custom Blok Mesin
+                                        </span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                        <span class="text-gray-600">Custom Head Mesin</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                        <span class="text-gray-600">Pembuatan Alat bantu</span>
+                                    </li>
+
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="mt-8">
+                            <h3 class="text-lg font-medium text-gray-700 mb-4">Fasilitas Kami</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="overflow-hidden rounded-lg shadow">
+                                    <div class="h-40 bg-gray-200 flex items-center justify-center">
+                                        <i class="fas fa-image text-gray-400 text-3xl"></i>
+                                    </div>
+                                    <div class="p-3 bg-white">
+                                        <p class="text-sm text-gray-600">Pusat Mesin CNC</p>
+                                    </div>
+                                </div>
+                                <div class="overflow-hidden rounded-lg shadow">
+                                    <div class="h-40 bg-gray-200 flex items-center justify-center">
+                                        <i class="fas fa-image text-gray-400 text-3xl"></i>
+                                    </div>
+                                    <div class="p-3 bg-white">
+                                        <p class="text-sm text-gray-600">Stasiun Pengendalian Mutu</p>
+                                    </div>
+                                </div>
+                                <div class="overflow-hidden rounded-lg shadow">
+                                    <div class="h-40 bg-gray-200 flex items-center justify-center">
+                                        <i class="fas fa-image text-gray-400 text-3xl"></i>
+                                    </div>
+                                    <div class="p-3 bg-white">
+                                        <p class="text-sm text-gray-600">Area Perakitan</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Contact Section -->
+                <section id="contactSection" class="hidden">
+                    <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                        <h2 class="text-xl font-semibold text-gray-800 mb-6">Informasi Kontak & Pemesanan</h2>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                            <div class="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                                <div class="flex items-center mb-3">
+                                    <div
+                                        class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                                        <i class="fas fa-map-marker-alt text-blue-600"></i>
+                                    </div>
+                                    <h3 class="text-lg font-medium">Lokasi</h3>
+                                </div>
+                                <p class="text-gray-600">
+                                    1563 Industrial Park Drive<br>
+                                    Auto City, CA 92101<br>
+                                    United States
+                                </p>
+                            </div>
+
+                            <div class="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                                <div class="flex items-center mb-3">
+                                    <div
+                                        class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-3">
+                                        <i class="fas fa-headset text-green-600"></i>
+                                    </div>
+                                    <h3 class="text-lg font-medium">Contact</h3>
+                                </div>
+                                <p class="text-gray-600">
+                                    <strong>Phone:</strong> (555) 123-4567<br>
+                                    <strong>Email:</strong> orders@autocraftpro.com<br>
+                                    <strong>Hours:</strong> Mon-Fri, 8AM-5PM PST
+                                </p>
+                            </div>
+
+
+                        </div>
+
+                        <h3 class="text-lg font-medium text-gray-700 mb-4">Place a New Order</h3>
+                        <form>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                                    <input type="text"
+                                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Company</label>
+                                    <input type="text"
+                                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                    <input type="email"
+                                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                                    <input type="tel"
+                                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Product Interest</label>
+                                <select
+                                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                    <option>Select a product</option>
+                                    <option>Turbo Kit V3</option>
+                                    <option>Ceramic Brake Kit</option>
+                                    <option>Titanium Exhaust System</option>
+                                    <option>Suspension Kit</option>
+                                    <option>Custom Component</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                                <input type="number" min="1"
+                                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            </div>
+
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Special Requirements</label>
+                                <textarea rows="3"
+                                    class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500"></textarea>
+                            </div>
+
+                            <button type="submit"
+                                class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center">
+                                <i class="fas fa-paper-plane mr-2"></i> Submit Inquiry
+                            </button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- Tracking Section -->
+                <section id="trackingSection" class="hidden">
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h2 class="text-xl font-semibold text-gray-800 mb-6">Tracking Pesanan</h2>
+
+                        <div class="mb-8">
+                            <div class="relative">
+                                <input type="text"
+                                    class="w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                    placeholder="cari berdasarkan pesanan">
+                                <div class="absolute left-3 top-3.5 text-gray-400">
+                                    <i class="fas fa-search"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Order Status -->
+                        <div class="border rounded-lg overflow-hidden">
+                            <div class="bg-gray-50 px-4 py-3 border-b">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <span class="text-gray-500 mr-2">Pesanan #:</span>
+                                        <span class="font-medium">AC-10254</span>
+                                    </div>
+                                    <div>
+                                        <span
+                                            class="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">Sedang
+                                            Produksi</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-4">
+                                <h3 class="text-lg font-medium mb-4">Blok Custom</h3>
+
+                                <div class="mb-6">
+                                    <div class="flex justify-between text-sm text-gray-500 mb-1">
+                                        <span>Pemesanan: 14 Jun, 2025</span>
+                                        <span>Estimasi Selesai: 15 Jun, 2025</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div class="bg-blue-600 h-2.5 rounded-full" style="width: 65%"></div>
+                                    </div>
+                                    <div class="flex justify-between mt-1 text-xs text-gray-500">
+                                        <span>Proses</span>
+                                        <span>Produksi</span>
+                                        <span>Inspeksi</span>
+                                        <span>Selesai</span>
+
+                                    </div>
+                                </div>
+
+                                <div class="space-y-4 mt-6">
+                                    <div class="flex items-start">
+                                        <div
+                                            class="w-10 h-10 rounded-full bg-blue-100 flex-shrink-0 flex items-center justify-center mr-4">
+                                            <i class="fas fa-check-circle text-blue-600"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium">Order Confirmed</p>
+                                            <p class="text-xs text-gray-500 mt-1">Jan 3, 2024 - 10:15 AM</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-start">
+                                        <div
+                                            class="w-10 h-10 rounded-full bg-blue-100 flex-shrink-0 flex items-center justify-center mr-4">
+                                            <i class="fas fa-check-circle text-blue-600"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium">Materials Prepared</p>
+                                            <p class="text-xs text-gray-500 mt-1">Jan 4, 2024 - 9:30 AM</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-start">
+                                        <div
+                                            class="w-10 h-10 rounded-full bg-blue-100 flex-shrink-0 flex items-center justify-center mr-4">
+                                            <i class="fas fa-cog text-blue-600"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium">Production in Progress (65%)</p>
+                                            <p class="text-xs text-gray-500 mt-1">Started: Jan 5, 2024</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-start">
+                                        <div
+                                            class="w-10 h-10 rounded-full bg-gray-100 flex-shrink-0 flex items-center justify-center mr-4">
+                                            <i class="fas fa-clipboard-check text-gray-400"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-400">Quality Testing</p>
+                                            <p class="text-xs text-gray-400 mt-1">Not started</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-start">
+                                        <div
+                                            class="w-10 h-10 rounded-full bg-gray-100 flex-shrink-0 flex items-center justify-center mr-4">
+                                            <i class="fas fa-truck text-gray-400"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-400">Shipped</p>
+                                            <p class="text-xs text-gray-400 mt-1">Not started</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-8 border-t pt-6">
+                                    <h4 class="text-md font-medium mb-4">Order Details</h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-700 mb-2">Customer Information</p>
+                                            <p class="text-sm text-gray-600">
+                                                <strong>Name:</strong> John Smith<br>
+                                                <strong>Company:</strong> Performance Auto<br>
+                                                <strong>Email:</strong> j.smith@performanceauto.com<br>
+                                                <strong>Phone:</strong> (555) 123-4567
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-700 mb-2">Shipping Address</p>
+                                            <p class="text-sm text-gray-600">
+                                                1234 Tuning Lane<br>
+                                                Motorsport City, CA 90210<br>
+                                                United States
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-700 mb-2">Order Summary</p>
+                                            <p class="text-sm text-gray-600">
+                                                <strong>Item:</strong> Turbo Kit V3 (Custom Spec)<br>
+                                                <strong>Quantity:</strong> 1<br>
+                                                <strong>Order Value:</strong> $3,750.00<br>
+                                                <strong>Payment Method:</strong> Credit Card (Visa ending in 3482)
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-700 mb-2">Special Notes</p>
+                                            <p class="text-sm text-gray-600">
+                                                Requires special wastegate configuration and blue anodized finish. All
+                                                measurements confirmed via CAD files provided.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div
+                                    class="mt-6 flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
+                                    <button
+                                        class="px-4 py-2 border rounded-lg hover:bg-gray-50 flex items-center justify-center">
+                                        <i class="fas fa-file-pdf mr-2"></i> Download Invoice
+                                    </button>
+                                    <button
+                                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center">
+                                        <i class="fas fa-envelope mr-2"></i> Contact About This Order
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize charts when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function () {
+            // Sales Chart
+            const salesCtx = document.getElementById('salesChart').getContext('2d');
+            const salesChart = new Chart(salesCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
+                    datasets: [{
+                        label: 'Sales ($)',
+                        data: [18500, 15200, 16800, 19200, 21300, 24100, 22800, 21500, 19800, 21700, 23400, 24780],
+                        backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                drawBorder: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Machine Utilization Chart
+            const machineCtx = document.getElementById('machineUtilizationChart').getContext('2d');
+            const machineChart = new Chart(machineCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Mesin Korter', 'Mesin  Honing', 'Mesin Bubut', 'Mesin Las', 'Mesin Press'],
+                    datasets: [{
+                        label: 'Utilization (%)',
+                        data: [78, 85, 64, 45, 72],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.7)',
+                            'rgba(16, 185, 129, 0.7)',
+                            'rgba(139, 92, 246, 0.7)',
+                            'rgba(234, 179, 8, 0.7)',
+                            'rgba(244, 63, 94, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(59, 130, 246, 1)',
+                            'rgba(16, 185, 129, 1)',
+                            'rgba(139, 92, 246, 1)',
+                            'rgba(234, 179, 8, 1)',
+                            'rgba(244, 63, 94, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                drawBorder: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Detailed Sales Chart
+            const detailedSalesCtx = document.getElementById('detailedSalesChart').getContext('2d');
+            const detailedSalesChart = new Chart(detailedSalesCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Turbo Kits', 'Brake Kits', 'Exhausts', 'Suspension', 'Misc'],
+                    datasets: [{
+                        label: 'Bulan Ini',
+                        data: [6240, 5120, 4350, 3890, 2180],
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'Bulan Sebelumnya',
+                        data: [5830, 4870, 4020, 3560, 1890],
+                        backgroundColor: 'rgba(156, 163, 175, 0.7)',
+                        borderColor: 'rgba(156, 163, 175, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                drawBorder: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+        // Toggle sidebar on mobile
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('active');
+        }
+
+        // Switch between owner and customer views
+        function setView(view) {
+            const ownerViewBtn = document.getElementById('ownerViewBtn');
+            const customerViewBtn = document.getElementById('customerViewBtn');
+            const ownerView = document.getElementById('ownerView');
+            const customerView = document.getElementById('customerView');
+            const ownerMenu = document.getElementById('ownerMenu');
+            const customerMenu = document.getElementById('customerMenu');
+
+            if (view === 'owner') {
+                ownerViewBtn.classList.add('active-view');
+                customerViewBtn.classList.remove('active-view');
+                ownerView.classList.remove('hidden');
+                customerView.classList.add('hidden');
+                ownerMenu.classList.remove('hidden');
+                customerMenu.classList.add('hidden');
+                showSection('dashboard');
+            } else {
+                ownerViewBtn.classList.remove('active-view');
+                customerViewBtn.classList.add('active-view');
+                ownerView.classList.add('hidden');
+                customerView.classList.remove('hidden');
+                ownerMenu.classList.add('hidden');
+                customerMenu.classList.remove('hidden');
+                showCustomerSection('profile');
+            }
+        }
+
+        // Show owner view sections
+        function showSection(section) {
+            // Hide all sections first
+            document.querySelectorAll('#ownerView > section').forEach(sec => {
+                sec.classList.add('hidden');
+            });
+
+            // Show the selected section
+            document.getElementById(section + 'Section').classList.remove('hidden');
+
+            // Update the header title
+            const headerTitleMap = {
+                'dashboard': 'Tinjauan Dasbor',
+                'inventory': 'Manajemen Persediaan',
+                'machining': 'Proses Pemesinan',
+                'sales': 'Statistik Penjualan',
+                'orders': 'Manajemen Pesanan',
+                'customers': 'Manajemen Pelanggan',
+                'comms': 'Komunikasi Pelanggan'
+            };
+
+            const headerTitle = document.querySelector('header h2');
+            if (headerTitle && headerTitleMap[section]) {
+                headerTitle.textContent = headerTitleMap[section];
+            }
+        }
+
+        // Show customer view sections
+        function showCustomerSection(section) {
+            // Hide all sections first
+            document.querySelectorAll('#customerView > section').forEach(sec => {
+                sec.classList.add('hidden');
+            });
+
+            // Show the selected section
+            document.getElementById(section + 'Section').classList.remove('hidden');
+        }
+    </script>
+</body>
+
+</html>
